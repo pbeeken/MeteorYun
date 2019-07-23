@@ -46,6 +46,11 @@ The y axis is more complicated but since it is over a shorter distance linear ap
         - This happens very fast and information uses memory on the Yun
         - A protocol can easily be setup using messaging.
         - Bridge ensures accurate communications.
+    - After some experiments I direct serial communication is the way to go. I can maintain realtime 100Hz (possibly faster) communication 
+    between the ATHOS and the Arduino.  I abandon the Bridge archetecture and wrote my own protocol (which is modelled after the messaging system)
 
 ## Compilation
 Look for [reference](https://github.com/arduino/Arduino/wiki/Build-Process) on build methodology to understand all the problems that cropped up on this project.
+
+Platformio, by default, picks out the file called main.cpp in the src folder. I have several versions of the '_firmware_' that is required to run on the Arduino depending on the communication plan. What I do is keep the different "*firmwares*" in a folder (of that name) and create a hard link to a file called main.cpp in src. 
+

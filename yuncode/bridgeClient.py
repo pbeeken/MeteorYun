@@ -1,4 +1,9 @@
 #!/usr/bin/python
+"""
+    This is really a comunication tester. We are partly testing communication speed.
+
+    Requirements: Arduino needs to be running msgComm.cpp (or variant) firmware
+"""
 
 import time
 import sys

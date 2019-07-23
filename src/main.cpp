@@ -1,43 +1,32 @@
 #include <Arduino.h>
-#include <Bridge.h>
 #include <Streaming.h>
 
 
-String CMD = "CMD";
-String RESP = "RSP";
-String cmd;
-
 String processCommand(String cmd);
+String getCommand(void);
+
 
 // Initial setup
 void setup() { 
-    Bridge.begin();
-    Bridge.put(RESP, "WAIT");
-    Bridge.put(CMD, "");
+    Serial1.begin(115200);
+    while( !Serial1 );
 
-//    Serial.begin(115200);
-    while( !Serial );
-
-//    Serial << "Bridge Ready!" << endl;  // DEBUG
-    Bridge.put(RESP, "READY");
+    Serial1 << "READY" << endl;
 
 }
 
 // Keep examining the key/value pairs for messages.
 void loop() {
-    char cmdBuffer[20];
-    // Get a command
-    if( Bridge.get(CMD, cmdBuffer, 20) > 0 ) {
-        cmd = cmdBuffer;
+
+  String cmd = getCommand();
+  if( cmd.length() > 0 ) {
 //        Serial << "Command: '" << cmd << "'"; // DEBUG
-        Bridge.put(RESP,"BUSY");
+        Serial1 << "BUSY" << endl;
 
         // This is where we do something
         String resp = processCommand(cmd);
-        Bridge.put(RESP,resp);
-
-        // we are done
-        Bridge.put(CMD,"");  // empty command queue
+        Serial1 << resp << endl;
+        Serial1 << "READY" << endl;
     }
 }
 
@@ -86,4 +75,8 @@ String processCommand(String cmd) {
     }
 
     return "NULL";
+}
+
+String getCommand() {
+  return Serial1.readStringUntil('\n');
 }

@@ -1,6 +1,7 @@
+from __future__ import print_function
 # Serial connection
 import sys
-import pySerial
+import serial
 
 #main function
 if __name__ == "__main__":
@@ -14,14 +15,15 @@ if __name__ == "__main__":
         host = sys.argv[1]
         port = int(sys.argv[2])
 
-    sp = open(host,"rw")
+    sp = serial.Serial(host, speed, timeout=0.5)
 
     while True:
         msg = input("msg: ")
         if msg=="DONE":
             break
         sp.write(msg)
-        resp = sp.readline(255)
-        print resp
+        
+        resp = sp.read(255)
+        print( resp )
 
-    print "We are done."
+    print( "We are done." )

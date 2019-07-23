@@ -1,10 +1,19 @@
-# Bad telnet client
-# telnet program example
+#!/usr/bin/python
+from __future__ import print_function
+"""
+    This is just a bad telnet client using the python interpreter.  We are also testing the
+    through connector from a remote client.
+
+    Requirements: Arduino needs to be running telnetComm.cpp (or variant) firmware
+"""
 # Can connect:
 # You can also see the Console by opening a terminal window and typing ssh root@yourYunsName.local 'telnet localhost 6571' then pressing enter.
+# doesn't really seem to work.
 
-
-import socket, select, string, sys
+import socket
+import select
+import string
+import sys
 
 #main function
 if __name__ == "__main__":
