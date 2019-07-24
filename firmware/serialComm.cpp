@@ -1,82 +1,185 @@
 #include <Arduino.h>
 #include <Streaming.h>
+#include <BasicStepperDriver.h>
 
+//#define DEBUG
+/** 
+ * Stepper setup
+ */
+const int RPM = 120;
+const int STEPS_PER_REV = 80;  // change this to fit the number of steps per revolution
 
+// All the wires needed for full functionality
+const int DIR = 2;
+const int STEP = 3;
+const int ENABLE = 4;
+//const int MICROSTEPS = 1;
+BasicStepperDriver xaxis(STEPS_PER_REV, DIR, STEP, ENABLE);
+
+/**
+ * Forward declarations
+ */
 String processCommand(String cmd);
 String getCommand(void);
+String digiWrite(String cmd);
+String digiRead(String cmd);
+String analWrite(String cmd);
+String analRead(String cmd);
+String setMode(String cmd);
+String zeroMotor(String cmd);
 
+#define CMDPORT Serial1
 
-// Initial setup
-void setup() { 
-    Serial1.begin(115200);
-    while( !Serial1 );
+/**
+ * Initial setup
+ */
+void setup() {
 
-    Serial1 << "READY" << endl;
+  #ifdef DEBUG
+      Serial.begin(115200);
+      while(!Serial);
+      Serial << "READY!!!" << endl;
+  #endif
+    
+    CMDPORT.begin(115200);
+    while( !CMDPORT );
+
+    CMDPORT << "READY" << endl;
 
 }
 
-// Keep examining the key/value pairs for messages.
+/**
+ *  We talk .
+ */ 
 void loop() {
 
   String cmd = getCommand();
   if( cmd.length() > 0 ) {
-//        Serial << "Command: '" << cmd << "'"; // DEBUG
-        Serial1 << "BUSY" << endl;
+    CMDPORT << "BUSY '" << cmd << "'" << endl;
 
         // This is where we do something
+  #ifdef DEBUG
+    Serial << "Command: '" << cmd << "'" << endl; // DEBUG
+  #endif
+  
         String resp = processCommand(cmd);
-        Serial1 << resp << endl;
-        Serial1 << "READY" << endl;
+        CMDPORT << resp << endl;
+  
+  #ifdef DEBUG
+    Serial << " +-Resp: '" << resp << "'" << endl; // DEBUG
+  #endif
+        // ready for next command
+        CMDPORT << "READY" << endl;
     }
+    
 }
 
-String processCommand(String cmd) {
-    if (cmd.startsWith("DW")) { // Set digital line DS ##,H|L where ## is the pin and H or L is the value, returns OK
-        int pin = (int) cmd.substring(3,5).toInt();
-        switch (cmd.charAt(6)) {
-            case 'H': digitalWrite(pin, HIGH); break;
-            case 'L': digitalWrite(pin, LOW); break;
-            default: return "ERR";
-            }
-//        Serial << " dw p:" << pin << " v:" << cmd.charAt(6) << endl;  // DEBUG
-        return "OK";
-    } else
-    if (cmd.startsWith("DR")) { // Query digital line DQ ## where ## is the pin, returns 'OK H|L'
-        int pin = (int) cmd.substring(3,5).toInt();
-        int val = digitalRead(pin);
-//        Serial << "dr p:" << pin << " v:" << val << endl;
-        return val==0?"OK L":"OK H";
-    } else
-    if (cmd.startsWith("AW")) { // Set analog line AS ##,### where ## is the pin and ### is the value, returns OK
-        int pin = (int) cmd.substring(3,5).toInt();
-        int val = (int) cmd.substring(5,8).toInt();
-        analogWrite(pin, val);
-//        Serial << " aw p:" << pin << " v:" << val << endl;  // DEBUG
-        return "OK";
-    } else
-    if (cmd.startsWith("AR")) { // Set analog line AQ ##,### where ## is the pin, returns 'OK ###'
-        int pin = (int) cmd.substring(3,5).toInt();
-        String rc = "OK ";
-        int val = analogRead(pin);
-        rc = rc + val;
-//        Serial << " ar p:" << pin << " v:" << val << endl;  // DEBUG
-        return rc;
-    } else
-    if (cmd.startsWith("PM")) { // Set analog line PM ##,I|O|P where ## is the pin, Input, Output, InputPullup returns 'OK ###'
-        int pin = (int) cmd.substring(3,5).toInt();
-        switch (cmd.charAt(6)) {
-            case 'I': pinMode(pin,INPUT); break;
-            case 'O': pinMode(pin,OUTPUT); break;
-            case 'P': pinMode(pin,INPUT_PULLUP); break;
-            default: return "ERR";
-        }
-//        Serial << " pm p:" << pin << " v:" << cmd.charAt(6) << endl;  // DEBUG
-        return "OK";
-    }
+String digiWrite(String cmd) {
+  // Set digital line DW ##,H|L where ## is the pin and H or L is the value, returns OK
+  int pin = (int) cmd.substring(0,2).toInt();
+  switch (cmd.charAt(3)) {
+      case 'H': digitalWrite(pin, HIGH); break;
+      case 'L': digitalWrite(pin, LOW); break;
+      default: return "ERR";
+      }
 
+  #ifdef DEBUG
+    Serial << " dw p:" << pin << " v:" << cmd.charAt(6) << endl;  // DEBUG
+  #endif
+
+  return "OK";
+}
+
+String digiRead(String cmd) {
+  // Query digital line DR ## where ## is the pin, returns 'OK H|L'
+  int pin = (int) cmd.substring(0,2).toInt();
+  int val = digitalRead(pin);
+
+  #ifdef DEBUG
+          Serial << "dr p:" << pin << " v:" << val << endl;
+  #endif
+
+  return val==0?"OK L":"OK H";
+}
+
+String analWrite(String cmd) {
+  // Set analog line AS ##,### where ## is the pin and ### is the value, returns OK
+  int pin = (int) cmd.substring(0,2).toInt();
+  int val = (int) cmd.substring(3,5).toInt();
+  analogWrite(pin, val);
+
+  #ifdef DEBUG
+    Serial << " aw p:" << pin << " v:" << val << endl;  // DEBUG
+  #endif
+
+  return "OK";
+}
+
+String analRead(String cmd) {
+  // Set analog line AQ ##,### where ## is the pin, returns 'OK ###'
+  int pin = (int) cmd.substring(0,2).toInt();
+  int val = analogRead(pin);
+
+  #ifdef DEBUG
+    Serial << " ar p:" << pin << " v:" << val << endl;  // DEBUG
+  #endif
+
+  return "OK "+val;
+}
+
+String setMode(String cmd) {
+  // Set analog line PM ##,I|O|P where ## is the pin, Input, Output, InputPullup returns 'OK ###'
+  int pin = (int) cmd.substring(0,2).toInt();
+  switch (cmd.charAt(3)) {
+    case 'I': pinMode(pin,INPUT); break;
+    case 'O': pinMode(pin,OUTPUT); break;
+    case 'P': pinMode(pin,INPUT_PULLUP); break;
+    default: return "ERR";
+  }
+  #ifdef DEBUG
+    Serial << " pm p:" << pin << " v:" << cmd.charAt(6) << endl;  // DEBUG
+  #endif
+
+  return "OK";
+}
+
+String zeroMotor(String cmd) {
+  return "PASS";
+}
+
+
+String processCommand(String cmd) {
+    if (cmd.startsWith("DW")) {
+      return digiWrite(cmd.substring(3));
+
+    } else
+    if (cmd.startsWith("DR")) {
+      return digiRead(cmd.substring(3));
+
+    } else
+    if (cmd.startsWith("AW")) {
+      return analWrite( cmd.substring(3) );
+
+    } else
+    if (cmd.startsWith("AR")) {
+      return analRead( cmd.substring(3) );
+    } else
+    if (cmd.startsWith("PM")) {
+      return setMode( cmd.substring(3) );
+    } else
+    if (cmd.startsWith("ZR")) {
+      return zeroMotor( cmd.substring(3) );
+    }
     return "NULL";
 }
 
 String getCommand() {
-  return Serial1.readStringUntil('\n');
+  String cmd;
+  char cc;
+  do {
+    cc = CMDPORT.read();
+    if(cc>0 && !isControl(cc)) cmd += cc;
+  } while( cc != '\n' );
+
+  return cmd;
 }

@@ -34,10 +34,10 @@ if __name__ == "__main__":
     try:
         s.connect((host, port))
     except:
-        print 'Unable to connect'
+        print('Unable to connect')
         sys.exit()
 
-    print 'Connected to remote host'
+    print('Connected to remote host')
 
     while True:
         socket_list = [sys.stdin, s]
@@ -50,7 +50,7 @@ if __name__ == "__main__":
             if sock == s:
                 data = sock.recv(1024)
                 if not data :
-                    print 'Connection closed'
+                    print('Connection closed')
                     sys.exit()
                 else :
                     #print data

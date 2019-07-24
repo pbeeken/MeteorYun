@@ -1,15 +1,15 @@
 #!/usr/bin/python
+from __future__ import print_function
 """
     This is really a comunication tester. We are partly testing communication speed.
 
     Requirements: Arduino needs to be running msgComm.cpp (or variant) firmware
 """
-
 import time
 import sys
 
-sys.path.insert(0, '/usr/lib/python2.7/bridge/')
-from bridgeclient import BridgeClient as bridgeclient
+sys.path.insert(0, '/usr/lib/python2.7/bridge/')  # the following line will throw a warning
+from bridgeclient import BridgeClient as bridgeclient # pylint: disable=unresolved-import
 
 #main function
 if __name__ == "__main__":

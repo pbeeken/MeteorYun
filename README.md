@@ -54,3 +54,17 @@ Look for [reference](https://github.com/arduino/Arduino/wiki/Build-Process) on b
 
 Platformio, by default, picks out the file called main.cpp in the src folder. I have several versions of the '_firmware_' that is required to run on the Arduino depending on the communication plan. What I do is keep the different "*firmwares*" in a folder (of that name) and create a hard link to a file called main.cpp in src. 
 
+## Yun experiments
+I have tried many different variants of facilitating communication between the Yun and the Arudino.  
+
+### HTTP Server
+I tried _**httpServer**_ which seemed to work most reliably but incurred the most overhead.  
+
+### TELNET
+I tried _**telnet**_ which I believed would allow operation from the Yun as well as a remote device.  This was slow and didn't allow outside communication because the telnet client wasn't complete.  
+
+### BASE messaging
+We then went to the _**base**_ messaging protocol (_key/value pairs_) but revealed the source of the low bandwidth. All these other protocols relied of this messaging. Finally I went to total serial control.  
+
+### Serial Control
+There are two serial (pseudo serial) ports.  One is accessible through the USB port which connects to the Arduino (**Serial**) and the other is an internal (**Serial1**)and hardwired to the ATHOS processor.  As long as you never launch the Bridge object the bridge software doesn't take over this port.  If only it were that easy.  Evidently the port on the ATHOS side gets poluted with some kind of crossover with a logging port and I can't use it to communicate with the Arduino reliably.  THIS IS THE NIGHTMARE PART: it seemed random.  I got it to work and after some time it would stop.  I played with a number of controls and background processes but couldn't get reliable connection through **Serial1**.  Control through **Serial** worked, however.
