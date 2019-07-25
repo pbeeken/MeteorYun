@@ -68,3 +68,30 @@ We then went to the _**base**_ messaging protocol (_key/value pairs_) but reveal
 
 ### Serial Control
 There are two serial (pseudo serial) ports.  One is accessible through the USB port which connects to the Arduino (**Serial**) and the other is an internal (**Serial1**)and hardwired to the ATHOS processor.  As long as you never launch the Bridge object the bridge software doesn't take over this port.  If only it were that easy.  Evidently the port on the ATHOS side gets poluted with some kind of crossover with a logging port and I can't use it to communicate with the Arduino reliably.  THIS IS THE NIGHTMARE PART: it seemed random.  I got it to work and after some time it would stop.  I played with a number of controls and background processes but couldn't get reliable connection through **Serial1**.  Control through **Serial** worked, however.
+
+# Raspberry Pi 3 Model B v2
+A vast improvement over the Yun.  I can communicate through the same serial port as I test and then connect to the Pi for control.
+
+## July 25, 2019
+I have gotten the protoshield wired for [stepper control](https://www.pololu.com/product/2134) (horizontal-axis) in 1/2 step mode.  The [specsheet for the core chip](https://www.pololu.com/file/download/drv8834.pdf?file_id=0J617) on this carrier is with TI. I have the limit switch to one side operational. Hardware issues to concern me going forward is locking down the stepper motor cable.  Need to connect the laser to a PWM port.
+Current pin purpose:
+```c++
+/** 
+ * Stepper setup
+ */
+const int RPM = 120;
+const int STEPS_PER_REV = 80;  // change this to fit the number of steps per revolution
+
+// All the wires needed for full functionality
+const int DIR = 2;
+const int STEP = 4;
+const int ENABLE = 7;
+const int MICROSTEPS = 1;
+// Limit sense pin
+const int LIMITDET = 3;
+
+```
+
+
+# Appendix
+[Crimp](https://www.instructables.com/id/Make-a-Good-Dupont-Pin-Crimp-EVERY-TIME/)
