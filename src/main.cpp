@@ -17,6 +17,8 @@ const int MICROSTEPS = 1;
 BasicStepperDriver xaxis(STEPS_PER_REV, DIR, STEP,ENABLE);
 
 const int LIMITDET = 3;
+int  MOTORPOSITION = 0;
+const int UPPERLIMIT = 550;  // number of 1/2 steps to left end from zeroing on right end
 
 /**
  * Forward declarations
@@ -166,46 +168,62 @@ String limitDetect(String cmd) {
 String zeroMotor(String cmd) {
   xaxis.enable();
 
+  // walk slowly up to limit switch
   while(digitalRead(LIMITDET)!=0) {
     xaxis.move(-1);
     delay(5);
   }
 
-
-//  xaxis.move(-100);
-  
-  delay(500);
-  xaxis.move(200);
+  xaxis.move(10);  // back off
+  MOTORPOSITION = 0;  // set the zero point
 
   xaxis.disable();
   return F("PASS");
 }
 
+String moveMotor(String cmd) {
+  int steps = (int) cmd.substring(0,3).toInt();
+  int dir = cmd.charAt(4)=='R'? -1: 1;
+
+  steps = dir*steps;
+
+  if ( MOTORPOSITION+steps >= 0 && MOTORPOSITION+steps < UPPERLIMIT ) {
+    xaxis.enable();
+    xaxis.move(steps);
+    xaxis.disable();
+    MOTORPOSITION += steps;
+  } else return "ERR too many steps:" + String(steps);
+
+  return String( "POS " ) + MOTORPOSITION;
+}
 
 String processCommand(String cmd) {
-    if (cmd.startsWith(F("DW"))) {
+    if (cmd.startsWith(F("DW"))) { // Digital Write
       return digiWrite(cmd.substring(3));
 
     } else
-    if (cmd.startsWith(F("DR"))) {
+    if (cmd.startsWith(F("DR"))) { // Digital Read
       return digiRead(cmd.substring(3));
 
     } else
-    if (cmd.startsWith(F("AW"))) {
+    if (cmd.startsWith(F("AW"))) { // Analog Write
       return analWrite( cmd.substring(3) );
 
     } else
-    if (cmd.startsWith(F("AR"))) {
+    if (cmd.startsWith(F("AR"))) { // Analog Read
       return analRead( cmd.substring(3) );
     } else
-    if (cmd.startsWith(F("PM"))) {
+    if (cmd.startsWith(F("PM"))) { // Pin Mode
       return setMode( cmd.substring(3) );
     } else
-    if (cmd.startsWith(F("ZM"))) {
+    if (cmd.startsWith(F("ZM"))) { // Zero Motor
       return zeroMotor( cmd.substring(3) );
     } else
-    if (cmd.startsWith(F("LD"))) {
+    if (cmd.startsWith(F("LD"))) { // Limit Detect
       return limitDetect( cmd.substring(3) );
+    } else
+    if (cmd.startsWith(F("MM"))) { // Step Motor
+      return moveMotor( cmd.substring(3) );
     }
 
     return F("NULL");
@@ -221,6 +239,8 @@ String getCommand() {
 
   return cmd;
 }
+
+
 /**
 PM 13,O
 DW 13,H
