@@ -86,7 +86,7 @@ const int STEPS_PER_REV = 80;  // change this to fit the number of steps per rev
 const int DIR = 2;
 const int STEP = 4;
 const int ENABLE = 7;
-const int MICROSTEPS = 2;  // we are 1/2 stepping it.
+const int MICROSTEPS = 16;  // we are 1/2 stepping it.
 // Limit sense pin
 const int LIMITDET = 3;
 const int UPPERLIMIT = 550;  // number of 1/2 steps to left end from zeroing on right end

@@ -6,7 +6,7 @@
 /** 
  * Stepper setup
  */
-const int RPM = 120;
+const int RPM = 80;
 const int STEPS_PER_REV = 80;  // change this to fit the number of steps per revolution
 
 // All the wires needed for full functionality
@@ -160,10 +160,8 @@ String setMode(String cmd) {
 String limitDetect(String cmd) {
   int state = digitalRead(LIMITDET);
 
-  return String( state==0?"HIT":"OPEN" );
-
+  return String( state==0?F("OK HIT"):F("OK OPEN") );
 }
-
 
 String zeroMotor(String cmd) {
   xaxis.enable();
@@ -188,45 +186,76 @@ String moveMotor(String cmd) {
   steps = dir*steps;
 
   if ( MOTORPOSITION+steps >= 0 && MOTORPOSITION+steps < UPPERLIMIT ) {
-    xaxis.enable();
+  //  xaxis.enable();
     xaxis.move(steps);
-    xaxis.disable();
+  //  xaxis.disable();
     MOTORPOSITION += steps;
   } else return "ERR too many steps:" + String(steps);
 
   return String( "POS " ) + MOTORPOSITION;
 }
 
+String lightLaser(String cmd) {
+  int brightness = (int) cmd.substring(0,3).toInt();
+  analogWrite(5,brightness);
+
+  return F("OK");
+}
+
+String motorEnable(String cmd) {
+  if (cmd.startsWith("ON"))
+    xaxis.enable();
+  else
+    xaxis.disable();
+
+  return F("OK");
+}
+
 String processCommand(String cmd) {
-    if (cmd.startsWith(F("DW"))) { // Digital Write
-      return digiWrite(cmd.substring(3));
+
+  String retmsg = F("NULL");
+
+    if (cmd.startsWith(F("DW"))) { // Digital Write  DW ##,H|L    ret OK
+      retmsg = digiWrite(cmd.substring(3));
 
     } else
-    if (cmd.startsWith(F("DR"))) { // Digital Read
-      return digiRead(cmd.substring(3));
+    if (cmd.startsWith(F("DR"))) { // Digital Read  DR ##         ret OK H|L
+      retmsg = digiRead(cmd.substring(3));
 
     } else
-    if (cmd.startsWith(F("AW"))) { // Analog Write
-      return analWrite( cmd.substring(3) );
+    if (cmd.startsWith(F("AW"))) { // Analog Write AW ##,###       ret OK
+      retmsg = analWrite( cmd.substring(3) );
 
     } else
-    if (cmd.startsWith(F("AR"))) { // Analog Read
-      return analRead( cmd.substring(3) );
+    if (cmd.startsWith(F("AR"))) { // Analog Read AR ##            ret OK ####
+      retmsg = analRead( cmd.substring(3) );
+
     } else
-    if (cmd.startsWith(F("PM"))) { // Pin Mode
-      return setMode( cmd.substring(3) );
+    if (cmd.startsWith(F("PM"))) { // Pin Mode PM ##,I|O|P         ret OK
+      retmsg = setMode( cmd.substring(3) );
+
     } else
-    if (cmd.startsWith(F("ZM"))) { // Zero Motor
-      return zeroMotor( cmd.substring(3) );
+    if (cmd.startsWith(F("ZM"))) { // Zero Motor  ZM               ret OK
+      retmsg = zeroMotor( cmd.substring(3) );
+
     } else
-    if (cmd.startsWith(F("LD"))) { // Limit Detect
-      return limitDetect( cmd.substring(3) );
+    if (cmd.startsWith(F("LD"))) { // Limit Detect LD              ret OK HIT|OPEN
+      retmsg = limitDetect( cmd.substring(3) );
+
     } else
-    if (cmd.startsWith(F("MM"))) { // Step Motor
-      return moveMotor( cmd.substring(3) );
+    if (cmd.startsWith(F("MM"))) { // Move Motor MM ###,L|R        ret OK
+      retmsg = moveMotor( cmd.substring(3) );
+
+    } else
+    if (cmd.startsWith(F("LL"))) { // Laser Light level LL ###     ret OK
+      retmsg = lightLaser( cmd.substring(3) );
+
+    } else
+    if (cmd.startsWith(F("ME"))) { // Enable Motor MM ON|OFF       ret OK
+      retmsg = motorEnable( cmd.substring(3) );
     }
 
-    return F("NULL");
+    return retmsg;
 }
 
 String getCommand() {
