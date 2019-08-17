@@ -4,6 +4,7 @@
 
 //const int DEBUG
 const int LED_13 = 13;
+
 // Motor pin definitions:
 const int HM_PIN1  = 5;     // IN1 on the ULN2003 driver
 const int HM_PIN2  = 6;     // IN2 on the ULN2003 driver
@@ -11,14 +12,14 @@ const int HM_PIN3  = 7;     // IN3 on the ULN2003 driver
 const int HM_PIN4  = 8;     // IN4 on the ULN2003 driver
 const int H_LIMIT_PIN  = 2;
 
-// const int VM_PIN1  = 10;    // IN1 on the ULN2003 driver
-// const int VM_PIN2  = 9;     // IN2 on the ULN2003 driver
-// const int VM_PIN3  = 8;     // IN3 on the ULN2003 driver
-// const int VM_PIN4  = 7;     // IN4 on the ULN2003 driver
-// const int V_LIMIT_PIN  = 12;
+const int VM_PIN1  = 9;     // IN1 on the ULN2003 driver
+const int VM_PIN2  = 10;    // IN2 on the ULN2003 driver
+const int VM_PIN3  = 11;    // IN3 on the ULN2003 driver
+const int VM_PIN4  = 12;    // IN4 on the ULN2003 driver
+const int V_LIMIT_PIN  = 4;
 
 AccelStepper horiz(AccelStepper::HALF4WIRE, HM_PIN1, HM_PIN3, HM_PIN2, HM_PIN4);
-// AccelStepper vert(AccelStepper::HALF4WIRE, VM_PIN1, VM_PIN2, VM_PIN3, VM_PIN4);
+AccelStepper vert(AccelStepper::HALF4WIRE, VM_PIN1, VM_PIN3, VM_PIN2, VM_PIN4);
 
 
 const int LASER_PULSE_PIN = 3;
@@ -43,6 +44,8 @@ String setMode(String cmd);
 String zeroMotor(String cmd);
 void zeroMotorHoriz(long setPoint);
 
+String Cmd = "";
+
 /**
  * Initial setup
  */
@@ -50,7 +53,7 @@ void setup() {
     
   Serial.begin(115200);
   while( !Serial );
-
+  Cmd.reserve(30);
   
   pinMode(H_LIMIT_PIN, INPUT_PULLUP);
   zeroMotorHoriz(HORIZ_BACKLASH);
@@ -60,7 +63,7 @@ void setup() {
   horiz.setAcceleration(10000.0);
 
   Serial << F("ARDUINO READY") << endl;
-  
+
 }
 
 
@@ -69,7 +72,6 @@ void setup() {
  *  We talk .
  */ 
 void loop() {
-  static String Cmd = "------------";
 
   if( getCommand(Cmd) ) {
     Serial << "BUSY {" << Cmd << "}" << endl; 
