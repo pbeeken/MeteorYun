@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Streaming.h>
 #include <AccelStepper.h>
+//#include <MultiStepper.h>
 
 //const int DEBUG
 const int LED_13 = 13;
@@ -22,14 +23,14 @@ const int V_LIMIT_PIN  = 4;
 
 AccelStepper horz(AccelStepper::HALF4WIRE, HM_PIN1, HM_PIN3, HM_PIN2, HM_PIN4);
 AccelStepper vert(AccelStepper::HALF4WIRE, VM_PIN1, VM_PIN3, VM_PIN2, VM_PIN4);
-
+//MultiStepper combo;
 
 const int LASER_PULSE_PIN = 3;
 /** 
  * Stepper setup
  */
 const float MAX_SPEED = 2000.0;
-const long horz_BACKLASH = 2750;
+const long horz_BACKLASH = 2250;
 const long horz_LOWERLIMIT = -2000;
 const long horz_UPPERLIMIT = 2000;
 
@@ -45,7 +46,9 @@ bool getCommand(String& cmd);
 void zeroMotorHorz(long);
 void zeroMotorVert(long);
 
-
+/**
+ * Command static 
+ **/
 String Cmd = "";
 
 /**
@@ -74,6 +77,10 @@ void setup() {
   vert.setMaxSpeed(MAX_SPEED); 
   vert.setAcceleration(10000.0);
 
+  // Build the multistepper
+  //combo.addStepper(horz);
+  //combo.addStepper(vert);
+
   // signal to the client we are done with setup.
   Serial << "READY" << endl;
 }
@@ -83,10 +90,9 @@ void setup() {
  */ 
 void loop() {
 
-  if( getCommand(Cmd) ) {
-    Serial << "BUSY {" << Cmd << "}" << endl; // DEBUGGING
-
-    //    String resp = "NOTHING...";
+  // Only do something if there is a command
+  if( getCommand(Cmd) ) { 
+    // Process command and return the result.
     String resp = processCommand(Cmd);
     Serial << resp << endl;
   
@@ -94,15 +100,15 @@ void loop() {
     Serial << F("READY") << endl;
     }
 
+  // manage steps.
   horz.run();
   vert.run();
 }
 
-/**
- * ########################################################
- * ###  Basic Controls                                  ###
- * ###                                                  ###
- * ########################################################
+/** ########################################################
+ *  ###  Basic Controls                                  ###
+ *  ###                                                  ###
+ *  ########################################################
  **/
 
 /**
@@ -244,11 +250,38 @@ void laserBright(int brightness) {
  * report the motor status 
  **/
 String motorStatus() {
-  char h = horz.isRunning() ? "H":"-";
-  char v = vert.isRunning() ? "V":"-";
+  char h = horz.isRunning() ? 'H':'-';
+  char v = vert.isRunning() ? 'V':'-';
   return h + v;
 }
 
+/** 
+ * Move motors together to specified delta position (blocks until done)
+ **/
+void moveTogether(long h, long v) {
+  // long pos[2];
+  // pos[0] = h;
+  // pos[1] = v;
+  moveHorz(h);
+  moveVert(v);
+  // combo.runSpeedToPosition(); // Blocks until all are in position
+}
+
+/** 
+ * Move motors together to specified delta position (blocks until done)
+ **/
+void goTogether(long h, long v) {
+  // long pos[2];
+  // pos[0] = h;
+  // pos[1] = v;
+  moveToHorz(h);
+  moveToVert(v);
+  // combo.runSpeedToPosition(); // Blocks until all are in position (doesn't quite work as advertised)
+}
+
+/**
+ * enable or disable motors (keep 'em cool) 
+ **/
 void motorEnable(bool hMotorOn, bool vMotorOn) {
   if (hMotorOn)
     horz.enableOutputs();
@@ -262,6 +295,11 @@ void motorEnable(bool hMotorOn, bool vMotorOn) {
 
 }
 
+/** ########################################################
+ *  ###  Command Handling                                ###
+ *  ###                                                  ###
+ *  ########################################################
+ **/
 // convenience function
 inline 
 bool is(const String& cmd, const char* toMatch) {
@@ -292,13 +330,33 @@ String processCommand(String cmd) {
     }
 
     else
-    if (is(cmd, "GH")) { // Move Δh return where we are to go
+    if (is(cmd, "GH")) { // Move to abs pos h return where we are to go
        retmsg = moveToHorz( cmd.substring(3).toInt() );
-    }// Move Δh return where we are to go
+    }
 
     else
-    if (is(cmd, "GV")) { // Move Δh return where we are to go
-       retmsg = ( cmd.substring(3).toInt() );
+    if (is(cmd, "GV")) { // Move to abs pos v return where we are to go
+       retmsg = moveToVert( cmd.substring(3).toInt() );
+    }
+
+    else
+    if (is(cmd, "MT")) { // Move to Δ h,v pos
+      int sep = cmd.indexOf(",");
+      if (sep<0) return ERR_RESP + " two values expected.";
+      long h = cmd.substring(3,sep).toInt();
+      long v = cmd.substring(sep+1).toInt();
+      moveTogether( h, v );
+      retmsg = OK_RESP + " " + h + " " + v;
+    }
+
+    else
+    if (is(cmd, "GT")) { // Move to abs h,v pos
+      int sep = cmd.indexOf(",");
+      if (sep<0) return ERR_RESP + " two values expected.";
+      long h = cmd.substring(3,sep).toInt();
+      long v = cmd.substring(sep+1).toInt();
+      goTogether( h, v );
+      retmsg = OK_RESP + " " + h + " " + v;
     }
 
     else
