@@ -1,0 +1,13 @@
+Connecting to Pi:
+ssh pi@spaceghost.local
+(keygen code and put it in the authorized_keys)
+
+Copying files to Pi:
+scp somefile.py pi@spaceghost.local:~/Documents
+
+Serial connection is HardwareSerial on Arduino and '/dev/ttyACM0' on Pi.
+Emulation using attached laptop is easy as commands are portable.
+
+Some of the code examples were originally written for the Arduino Yun
+running Python 2.7.  This was upgraded to the RaspberryPi which runs
+Python 3.6.  Much more better.

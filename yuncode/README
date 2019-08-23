@@ -1,9 +1,0 @@
-Copying files to Yun:
-
-scp smbCred.txt root@spaceghost.local:/root
-
-Unfortunately the Yun doesn't recognize signatures.
-
-telnet connection to arduino through localhost is via port 6571
-
-serial connection is via Serial1 on the arduino and /dev/ttyATH0 on the Yun.
