@@ -6,38 +6,60 @@ Run the stepper through some paces.
 import sys
 import serial
 import time
+import RPi.GPIO as GPIO
 
-def getResp():
-    rsp = sp.readline().strip()
-    while rsp!=b'READY':
-        print( rsp, end=',' )
-        rsp = sp.readline().strip()
-    print( rsp )
+class arduinoComm:
 
-def sendCommand(cmd):
-    sp.write(cmd + b"\n") # zero motor position
-    getResp()
+    def arduinoComm(self, host, speed, timeout=0.5):
+        GPIO.setmode(GPIO.BCM)
+        this.resetPin = 20
+        GPIO.setup(this.resetPin, GPIO.OUT)
+        this.serport = serial.Serial(host='/dev/ttyACM0', speed=115200, timeout=0.5)
 
+    ## Get OK response after command.
+    # Blocks until received    
+    def getOK(self):
+        response = this.serport.readline().strip().decode("utf-8")
+        while response[:2]!="OK" or response[:3]!="ERR":
+            response = this.serport.readline().strip().decode("utf-8")
+        return response[3:]
+    
+    ## Get READY response signalling the arduino is waiting.
+    # Blocks until received    
+    def getREADY(self):
+        response = this.serport.readline().strip().decode("utf-8")
+        while response[:2]!="READY":
+            response = this.serport.readline().strip().decode("utf-8")
+        print( rsp )  # get rid of this after some testing
+
+    def sendCommand(cmd):
+        this.serport.write(cmd.encode() + b'\n')
+        getOK()
+
+    def shutDown():
+        this.serport.close()
+
+    # Use this to wipe the slate clean.
+    def resetArduino():
+        GPIO(this.resetPin, GPIO.HIGH)
+        time.sleep(0.5) # hold low for 1/2 sec
+        GPIO(this.resetPin, GPIO.LOW)
+        time.sleep(2) # Give the Arduino 2 sec to reset
 
 if __name__ == "__main__":
 
     if (len(sys.argv) < 3) :
-        host = '/dev/ttyACM0'
-        speed = 115200 # doesn't really matter as we are using USB.
-    else :
-        host = sys.argv[1]
-        speed = int(sys.argv[2])
+        arduino = arduinoComm()
+    else:
+        arduino = arduinoComm( host=sys.argv[1], speed=int(sys.argv[2]) )
 
- #   beat = 1/100 # 1 over period
-    sp = serial.Serial(host, speed, timeout=0.5)
+    arduino.sendCommand("ZH")
+    arduino.sendCommand("ZV")
 
-    sendCommand(b"ZH")
-    sendCommand(b"ZV")
+    arduino.sendCommand("LB 150") # 1/2 power laser
 
-    sendCommand(b"LB 150") # 1/2 power laser
+    time.sleep(3.0)
 
-    time.sleep(1.0)
+    arduino.sendCommand("LB 0")
 
-    sendCommand(b"LB 0")
-
-    sp.close()
+    arduino.sendCommand('ME')
