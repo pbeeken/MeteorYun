@@ -28,7 +28,7 @@ AccelStepper vert(AccelStepper::HALF4WIRE, VM_PIN1, VM_PIN3, VM_PIN2, VM_PIN4);
 const int LASER_PULSE_PIN = 3;
 /** 
  * Stepper setup
- */
+ **/
 const float MAX_SPEED = 2000.0;
 const long horz_BACKLASH = 2250;
 const long horz_LOWERLIMIT = -2000;
@@ -39,8 +39,19 @@ const long vert_LOWERLIMIT = -1000;
 const long vert_UPPERLIMIT = 1000;
 
 /**
+ * TODO: Need to set upper and lower limits for movement
+ * NB: we have an open loop system and other than the initial zeroing
+ * don't have any feedback as to where we are. The mechanics is not
+ * set up for robust overrun (overruns may break the plastic holders)
+ * so we need to put some margins on where we are allowed based on the
+ * internal counters, at least.
+ **/
+
+
+
+/**
  * Forward declarations
- */
+ **/
 String processCommand(String cmd);
 bool getCommand(String& cmd);
 void zeroMotorHorz(long);
@@ -306,6 +317,7 @@ bool is(const String& cmd, const char* toMatch) {
   return cmd.startsWith(toMatch);
 }
 
+// act on the commands
 String processCommand(String cmd) {
 
   String retmsg = F("ERR Command failed");
