@@ -2,16 +2,16 @@
 """
 Run the stepper through some paces.
 """
-import laserControl
+import LaserControl
 
 if __name__ == "__main__":
 
     if (len(sys.argv) < 3) :
-        laserControl = laserControl()
+        lc = LaserControl()
     else:
-        laserControl = laserControl( host=sys.argv[1], speed=int(sys.argv[2]) )
+        lc = LaserControl( host=sys.argv[1], speed=int(sys.argv[2]) )
 
-    laserControl.reZeroAxes()
+    lc.reZeroAxes()
 
     laserControl.sendCommand("LB 150") # 1/2 power laser
 

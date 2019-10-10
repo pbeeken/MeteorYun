@@ -20,7 +20,7 @@ class ArduinoComm:
         self.resetPin = 20
         GPIO.setup(self.resetPin, GPIO.OUT)
         self.serialPort = serial.Serial(port=hostPort, baudrate=hostSpeed, timeout=waitTime)
-        print( self.getRESP() )
+        print(self.getRESP())
 
     ## Get OK response after command.
     # Blocks until received    
@@ -36,7 +36,7 @@ class ArduinoComm:
         response = self.serialPort.readline().strip().decode("utf-8")
         while response[:2]!="READY":
             response = self.serialPort.readline().strip().decode("utf-8")
-        print( rsp )  # get rid of this after some testing
+        return response[3:]  # get rid of this after some testing
 
     ## Get Anyting
     def getRESP(self):
@@ -67,8 +67,9 @@ class ArduinoComm:
 # laserOps Object
 # encapsulates various methods for high level constrol of the laser pointer.
 class LaserControl(ArduinoComm):
-    ## same constructor a s arduino
-        
+    ## same constructor as arduino
+    aspectRatio = 60.5/13.  # xdis/ydis
+
     ## reZeroAxes
     # reset the zeros of each axis
     def reZeroAxes(self):
@@ -82,13 +83,48 @@ class LaserControl(ArduinoComm):
         self.sendCommand(f"LB {int(255*intensity):03d}")
         return self.getRESP()
 
-    ## moveTo
+    ## goTo
     # @param xy an array of absolute position in x and y
-    def moveTo(self, xy):
-        pass
+    def goto(self, xy):
+        self.sendCommand(f"GT {int(xy[0]):4d},{int(xy[1]):4d}")
+        return self.getRESP()
+
+    ## goTo verticaly
+    # @param y an absolute position in y
+    def gotoVert(self, y):
+        self.sendCommand(f"GV {int(y):4d}")
+        return self.getRESP()
+
+    ## goTo horizontally
+    # @param x an absolute position in x
+    def gotoHoriz(self, x):
+        self.sendCommand(f"GH {int(x):4d}")
+        return self.getRESP()
 
     ## move
-    # @param xy a delta movement from current position in x and y
+    # @param xy a delta movement from current position to x and y
     def move(self, xy):
-        pass
+        self.sendCommand(f"MT {int(xy[0]):4d},{int(xy[1]):4d}")
+        return self.getRESP()
 
+    ## move verticaly
+    # @param y a delta movement from current position to y
+    def moveVert(self, y):
+        self.sendCommand(f"MV {int(y):4d}")
+        return self.getRESP()
+
+    ## move horizontal
+    # @param x a delta movement from current position to x
+    def moveHoriz(self, x):
+        self.sendCommand(f"MH {int(x):4d}")
+        return self.getRESP()
+
+    ## query horizontal distance
+    def queryHoriz(self):
+        self.sendCommand(f"QH")
+        return self.getRESP()
+
+    ## query horizontal distance
+    def queryVert(self):
+        self.sendCommand(f"QV")
+        return self.getRESP()

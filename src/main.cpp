@@ -30,13 +30,13 @@ const int LASER_PULSE_PIN = 3;
  * Stepper setup
  **/
 const float MAX_SPEED = 2000.0;
-const long horz_BACKLASH = 2250;
+const long horz_BACKLASH = 2250;  // distance to restore to center when limit switch 
 const long horz_LOWERLIMIT = -2000;
 const long horz_UPPERLIMIT = 2000;
 
-const long vert_BACKLASH = 2000;
-const long vert_LOWERLIMIT = -1000;
-const long vert_UPPERLIMIT = 1000;
+const long vert_BACKLASH = 2000;  // distance to restore to center when limit switchb
+const long vert_LOWERLIMIT = -2000;
+const long vert_UPPERLIMIT = 2000;
 
 /**
  * TODO: Need to set upper and lower limits for movement
@@ -229,7 +229,7 @@ String moveVert(long steps) {
 /**
  * move the motor to an absolute position as determined by the last zero 
  **/
-String moveToVert(long location) {
+String goToVert(long location) {
   if ( location >= vert_LOWERLIMIT && location <= vert_UPPERLIMIT ) {
     vert.moveTo(location);
   } else 
@@ -241,7 +241,7 @@ String moveToVert(long location) {
 /**
  * move the motor to an absolute position as determined by the last zero 
  **/
-String moveToHorz(long location) {
+String goToHorz(long location) {
   if ( location >= horz_LOWERLIMIT && location <= horz_UPPERLIMIT ) {
     horz.moveTo(location);
   } else 
@@ -279,14 +279,14 @@ void moveTogether(long h, long v) {
 }
 
 /** 
- * Move motors together to specified delta position (blocks until done)
+ * Move motors together to specified absolute position (blocks until done)
  **/
 void goTogether(long h, long v) {
   // long pos[2];
   // pos[0] = h;
   // pos[1] = v;
-  moveToHorz(h);
-  moveToVert(v);
+  goToHorz(h);
+  goToVert(v);
   // combo.runSpeedToPosition(); // Blocks until all are in position (doesn't quite work as advertised)
 }
 
@@ -343,12 +343,12 @@ String processCommand(String cmd) {
 
     else
     if (is(cmd, "GH")) { // Move to abs pos h return where we are to go
-       retmsg = moveToHorz( cmd.substring(3).toInt() );
+       retmsg = goToHorz( cmd.substring(3).toInt() );
     }
 
     else
     if (is(cmd, "GV")) { // Move to abs pos v return where we are to go
-       retmsg = moveToVert( cmd.substring(3).toInt() );
+       retmsg = goToVert( cmd.substring(3).toInt() );
     }
 
     else
