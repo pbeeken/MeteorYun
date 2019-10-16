@@ -8,17 +8,24 @@ import RPi.GPIO as GPIO
 # encapsulates various methods for controlling the laser position.
 class ArduinoComm:
 
-    # serialPort = 0
     # resetPin = 20
+
 
     ## constructor 
     # @param speed baud rate as int
     # @param host port as a string
     # @param timeout as float (time to wait before throwing an error)
     def __init__(self, hostPort='/dev/ttyACM0', hostSpeed=115200, waitTime=0.5):
+
+        # set up the reset pin.
+        GPIO.setwarnings(False) # for the next few lines.  When we reopen this object we get an unnecessary warning.
         GPIO.setmode(GPIO.BCM)
         self.resetPin = 20
         GPIO.setup(self.resetPin, GPIO.OUT)
+        GPIO.output(self.resetPin, GPIO.LOW)
+        GPIO.setwarnings(False) # Turn it back on.
+
+        # open the serial port
         self.serialPort = serial.Serial(port=hostPort, baudrate=hostSpeed, timeout=waitTime)
         print(self.getRESP())
 
@@ -49,16 +56,39 @@ class ArduinoComm:
         self.serialPort.write(cmd.encode() + b'\n')
 
     ## shutdown the port
-    def shutDown(self):
+    def closePort(self):
         self.serialPort.close()
 
     ## reset the Arduino by pulling a pin low.
     # Use this to wipe the slate clean.
     def resetArduino(self):
+        # remember details
+        portSettings = self.serialPort.get_settings()
+        # complete hack.  When we reset the arduino the device point /dev/ttyACM0 is
+        # reactivated and /dev/ttyACM1 and visa versa so we restore the settings (prob
+        # unnnecessary) and toggle the name.  This was wrong. The Leonardo seems to
+        # need a full 10s or more to reset.
+
+        # shut down the serial port and wait
+        self.serialPort.close()
+        time.sleep(0.5)
+
+        # toggle the reset pin to the Arduino
         GPIO.output(self.resetPin, GPIO.HIGH)
-        time.sleep(0.5) # hold low for 1/2 sec
+        time.sleep(0.3) # hold low for 1/2 sec
         GPIO.output(self.resetPin, GPIO.LOW)
-        time.sleep(2) # Give the Arduino 2 sec to reset
+        time.sleep(10.0) # Give the Arduino a few to reset (yeah, it seems to need a full 10s)
+
+        # reopen serial port the following 'apply' is prob. overkill but why not?
+        self.serialPort.apply_settings(portSettings)
+        # portName = self.serialPort.port
+        # swap the port name (see above)  NEVERMIND.
+        # if portName[-1] is '0':
+        #     self.serialPort.port = portName[:-1] + '1'
+        # else:
+        #     self.serialPort.port = portName[:-1] + '0'
+        self.serialPort.open()
+        print(self.getRESP())
     
     def flushInput(self):
         self.serialPort.flushInput()
