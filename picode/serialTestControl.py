@@ -2,7 +2,9 @@
 """
 Run the stepper through some paces.
 """
-import LaserControl
+import sys
+import time
+from LaserControl import LaserControl
 
 if __name__ == "__main__":
 

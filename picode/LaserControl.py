@@ -32,18 +32,18 @@ class ArduinoComm:
     ## Get OK response after command.
     # Blocks until received    
     def getOK(self):
-        response = self.serialPort.readline().strip().decode("utf-8")
+        response = getRESP()
         while response[:2]!="OK" or response[:3]!="ERR":
-            response = self.serialPort.readline().strip().decode("utf-8")
-        return response[3:]
+            response = getRESP()
+        return response
     
     ## Get READY response signalling the arduino is waiting.
     # Blocks until received    
     def getREADY(self):
-        response = self.serialPort.readline().strip().decode("utf-8")
-        while response[:2]!="READY":
-            response = self.serialPort.readline().strip().decode("utf-8")
-        return response[3:]  # get rid of this after some testing
+        response = getRESP()
+        while response[:5]!="READY":
+            response = getRESP()
+        return response  # get rid of this after some testing
 
     ## Get Anyting
     def getRESP(self):
@@ -53,6 +53,7 @@ class ArduinoComm:
     # @param cmd is the command that needs to be encoded for sending.
     # gets the acknolacknowledgement if command received.
     def sendCommand(self,cmd):
+        self.serialPort.flushInput()   # flush anything in the incomiong pipe so we only see the response
         self.serialPort.write(cmd.encode() + b'\n')
 
     ## shutdown the port
@@ -157,4 +158,8 @@ class LaserControl(ArduinoComm):
     ## query horizontal distance
     def queryVert(self):
         self.sendCommand(f"QV")
+        return self.getRESP()
+
+    def queryStatus(self):
+        self.sendCommand(f"QM")
         return self.getRESP()

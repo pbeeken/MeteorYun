@@ -112,8 +112,12 @@ void loop() {
     }
 
   // manage steps.
-  horz.run();
+  horz.run(); 
   vert.run();
+
+  // TODO: Put an optional blocking call
+  // while (horz.isRunning() || vert.isRunning());  // wait until done.
+
 }
 
 /** ########################################################
@@ -247,7 +251,7 @@ String goToHorz(long location) {
   } else 
     return ERR_RESP + " " + location;
 
-  return OK_RESP + " " + vert.distanceToGo();
+  return OK_RESP + " " + horz.distanceToGo();
 }
 
 /**
