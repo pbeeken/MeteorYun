@@ -17,7 +17,7 @@ The YUN turns out to have some real problems with communication. It was releases
 in close proximity to the much cheaper RaspberryPi. Why buy the more expensive device when you could use the RaspberryPi as the controller (with a full fledged **Linux**OS) rather than a severely restricted **OpenWrt**OS.  The device never seemed to catch on and little development work seemed to be accumulated. The 'Bridge' has a great deal of lag in its communications and efforts to run a serial connection was frought with errors in the transmission at high speed.
 
 ## Communications
-Rather than the Athos/Arduino (read: *Yun*) we will use a RaspberryPi 3M-B as the primary controller with the Arduino as the Firmwasre system.
+Rather than the Athos/Arduino (read: *Yun*) we will use a RaspberryPi 3B+ as the primary controller with the Arduino as the Firmware system.
 
 ### Why this combo? 
 Why not just a RaspberryPi? Couple of reasons:
@@ -37,7 +37,8 @@ The Arduino needs a set of tools to get and respond to requests for doing things
 Observing and working with the stepper positioning of 3D printers which also operate open loop after calibration reveals when things go wrong. The steppers are very strong and can destroy the plastic framework. The 3D printers handle this by using metal components and 'slip gears' so that an error (read: overshoot) can be tolerated. I want the Firmware to do some checking on the requests so it doesn't overshoot (I can't prevent everything but at least I can check).  
 
 Some of the things we need...
-  1. ...a mechanism of calibration so that we can set a reference point.  We use two unused limit switches to walk the platform to a point where we can define zero.
+  1. ...a mechanism of calibration so that we can set a reference point.  
+    - I use two unused limit switches to walk the platform to a point where we can define zero.
   2. ...commands to know how many steps we have moved.
   3. ...commands to move a requisite set of steps in either direction.
   4. ...commands to move to a paricular position.
@@ -52,7 +53,8 @@ Some of the things we need...
   - `moveToVert()  # move to an absolute position`  (direct)
   - `getPosVert()  # get the internal position`  (direct)
   - `getPosHorz()  # get the internal position`  (direct)
-  - `laserBright() # set the laser intensity`  (0-off, 255-on)
+  - `laserBright() # set the laser intensity`  (0-off, 255-full on)
+  - `queryMotors() # report if the motors are still moving`  (It is my habit to make non-blocking routines. It is possible to issue commands that arrive before a current action is complete.  We need a way to slow the commands down when needed so we don't get ahead of ourselves)
 
 #### commands:
 All commands are terminated with a **␍** (aka '\r')
@@ -90,7 +92,7 @@ All commands are terminated with a **␍** (aka '\r')
     - return OK  
 
 
-upon successful acknowledgement the command returns an 'OK' with some optional additional informantion that gives some feedback on what was understood.  READY indicates the Arduino is ready for another command. (BTW, This doesn't mean the action, e.g. movement, is complete)  
+upon successful acknowledgement the command returns an 'OK' with some optional additional informantion that gives some feedback on what was understood.  READY indicates the Arduino is ready for another command. (BTW, This doesn't mean the action, e.g. movement, is complete as indicated above)  
 
 ### Supervisor:
 Does the heavy lifting in terms of executing the pattern control.  The supervisor will calculate the paths and send the x,y positions to the firmware.  We need a robust communication protocol to facilitate this connection.

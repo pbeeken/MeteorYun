@@ -1,8 +1,11 @@
 #!/bin/bash -e
 
-#Edit the display name of the RaspberryPi so you can distinguish
-#your unit from others in the Bluetooth console
-#(very useful in a class setting)
+# Edit the display name of the RaspberryPi so you can distinguish
+# your unit from others in the Bluetooth console
+# we are shying away from this in preference to using a ssh connection
+# to the raspberri pi via WiFi.  This way we don't have to implement
+# security protocols other than ones built in.
+# (very useful in a class setting)
 
 echo PRETTY_HOSTNAME=spacechost > /etc/machine-info
 
