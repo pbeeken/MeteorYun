@@ -11,3 +11,6 @@ Emulation using attached laptop is easy as commands are portable.
 Some of the code examples were originally written for the Arduino Yun
 running Python 2.7.  This was upgraded to the RaspberryPi which runs
 Python 3.6.  Much more better.
+
+Copying authorized_keys to the remote pi:
+cat ~/.ssh/id_rsa.pub | ssh pi@remotepi.local 'mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys'

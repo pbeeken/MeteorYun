@@ -8,28 +8,48 @@ def main():
     """
     We presume that the system has been calibrated and zeroed.
     """
-    start = time.monotonic()
-    limit = 1600
-
     lc = LaserControl()
 
     lc.laserPower(0.2)
 
-    rc = lc.gotoVert(-limit)
+    limit = 800
+    wait = 3.0
+
+    rc = lc.goto([ limit,  limit])
     print(f"{rc}")
-    lc.gotoHoriz(limit)
+    rc = lc.getREADY()  # wait for the arduino to be done
     print(f"{rc}")
+#    time.sleep(wait)
 
-    while (time.monotonic()-start) < 3.0:
-        rc = lc.queryStatus()
-        print(f"{rc}")
+    rc = lc.goto([ limit, -limit])
+    print(f"{rc}")
+    rc = lc.getREADY()  # wait for the arduino to be done
+    print(f"{rc}")
+#    time.sleep(wait)
 
-    # lc.gotoHoriz(-limit)
-    # lc.gotoVert(limit)
-    # lc.gotoHoriz(limit)
-    # lc.gotoVert(-limit)
+    rc = lc.goto([-limit, -limit])
+    print(f"{rc}")
+    rc = lc.getREADY()  # wait for the arduino to be done
+    print(f"{rc}")
+#    time.sleep(wait)
 
+    rc = lc.goto([-limit,  limit])
+    print(f"{rc}")
+    rc = lc.getREADY()  # wait for the arduino to be done
+    print(f"{rc}")
+#    time.sleep(wait)
+
+    lc.goto([ limit,  limit])
+    print(f"{rc}")
+    rc = lc.getREADY()  # wait for the arduino to be done
+    print(f"{rc}")
+#    time.sleep(2*wait)    
+
+    lc.goto([0,0])    
     lc.laserPower(0.0)
+
+
+
 
 
 if __name__ == "__main__":
