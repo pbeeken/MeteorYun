@@ -261,9 +261,10 @@ void laserBright(int brightness) {
  * report the motor status 
  **/
 String motorStatus() {
-  char h = horz.isRunning() ? 'H':'-';
-  char v = vert.isRunning() ? 'V':'-';
-  return h + v;
+  char rc[3] = "--";
+  rc[0] = horz.isRunning() ? 'H':'-';
+  rc[1] = vert.isRunning() ? 'V':'-';
+  return rc;
 }
 
 /** 

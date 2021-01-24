@@ -1,6 +1,6 @@
 import sys
-import serial
 import time
+import serial
 
 if sys.platform.startswith('win'):
     class GPIO:
@@ -51,17 +51,25 @@ class ArduinoComm:
     ## Get OK response after command.
     # Blocks until received    
     def getOK(self):
-        response = getRESP()
-        while response[:2]!="OK" or response[:3]!="ERR":
-            response = getRESP()
+        while True:
+            response = self.getRESP()
+            if response == "":
+                break
+            if response[:2] == "OK":
+                break
+            if response[:3] == "ERR":
+                break
         return response
     
     ## Get READY response signalling the arduino is waiting.
     # Blocks until received    
     def getREADY(self):
-        response = getRESP()
-        while response[:5] != "READY" || response == '':
-            response = getRESP()
+        while True:
+            response = self.getRESP()
+            if response == "":
+                break
+            if response[:5] != "READY":
+                break
         return response  # get rid of this after some testing
 
     ## Get Anyting

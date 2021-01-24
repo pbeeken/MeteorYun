@@ -1,3 +1,6 @@
+"""
+    This is a collection of test and sample routines to help with the building of components of the 
+"""
 from LaserControl import LaserControl
 import time
 
