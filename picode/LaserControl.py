@@ -1,7 +1,26 @@
 import sys
 import serial
 import time
-import RPi.GPIO as GPIO
+
+if sys.platform.startswith('win'):
+    class GPIO:
+        def setwarnings(self, p=False):
+            pass
+        def setmode(self, p=False):
+            pass
+        def setup(self, p):
+            pass
+        def output(self, p):
+            pass
+        # placeholders
+        HIGH=0
+        LOW=0
+        OUT=0
+        BCM=0
+
+else:
+    import RPi.GPIO as GPIO
+
 
 ## @class arduinoComm
 # arduinoCommand Object
@@ -41,7 +60,7 @@ class ArduinoComm:
     # Blocks until received    
     def getREADY(self):
         response = getRESP()
-        while response[:5]!="READY":
+        while response[:5] != "READY" || response == '':
             response = getRESP()
         return response  # get rid of this after some testing
 
@@ -163,3 +182,9 @@ class LaserControl(ArduinoComm):
     def queryStatus(self):
         self.sendCommand(f"QM")
         return self.getRESP()
+    
+    def motorsEnable(self, status=True):
+        if status:
+            self.sendCommand(f"MEHV")
+        else:
+            self.sendCommand(f"ME")

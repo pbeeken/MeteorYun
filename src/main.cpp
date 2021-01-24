@@ -401,7 +401,7 @@ String processCommand(String cmd) {
 
     else
     if (is(cmd, "QM")) {
-      retmsg = OK_RESP + motorStatus();
+      retmsg = OK_RESP + " " + motorStatus();
     }
 
     else
