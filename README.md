@@ -1,6 +1,6 @@
 **DEPRECATED**
 
-THIS PROJECT WAS COMPLETELY REFACTORED AND REPOSTED AS A NEW PROJECT: **[remoteLaserPointer](https://github.com/pbeeken/remoteLaserPointer)**
+THIS PROJECT WAS COMPLETELY REFACTORED AND REPOSTED AS A NEW PROJECT: **[attiny-remoteLaserPointer](https://github.com/pbeeken/attiny-remoteLaserPointer)**
 # Meteor
 
 The goal here is to develop an x-y "laser painter" that can cover a 10' wide, 3' high 3D display of our solar system.
